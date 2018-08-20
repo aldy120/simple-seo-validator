@@ -1,0 +1,31 @@
+{
+  "name": "simple-seo-validator",
+  "version": "1.0.0",
+  "description": "A simple seo validator",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "build": "babel src -d lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aldy120/simple-seo-validator.git"
+  },
+  "keywords": [
+    "seo"
+  ],
+  "author": "lichi <aldy120@yahoo.com.tw>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aldy120/simple-seo-validator/issues"
+  },
+  "homepage": "https://github.com/aldy120/simple-seo-validator#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "eslint": "^5.4.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "mocha": "^5.2.0"
+  }
+}
