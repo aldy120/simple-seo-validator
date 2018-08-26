@@ -1,83 +1,131 @@
 const jsdom = require('jsdom');
-const util = require('util');
 
 const { JSDOM } = jsdom;
 
-
-function validator(filename) {
-  // const filename = 'test/empty-alt.html';
-  // const filename = 'test/no-alt.html';
-  JSDOM.fromFile(filename)
-    .then((dom) => {
-      // console.log(dom.serialize());
-      const { document } = dom.window;
-      // Law 1
-      const { total: law1Count } = passLaw1Count(document);
-      console.log(`There are ${law1Count} <img> tag without alt attribute.`);
-      // Law 2
-      const { total: law2Count } = passLaw2Count(document);
-      console.log(`There are ${law2Count} <a> tag without rel attribute.`);
-      // Law 3.1
-      const { total: law3TitleCount } = passHaveTitle(document);
-      console.log(`This HTML has ${law3TitleCount} <title> tag`);
-      // Law 3.2
-      const { total: law3DescriptionsCount } = passMetaDescriptions(document);
-      console.log(`This HTML has ${law3DescriptionsCount} <meta name="descriptions"> tag in <head>`);
-      // Law 3.3
-      const { total: law3KeywordsCount } = passMetaKeywords(document);
-      console.log(`This HTML has ${law3KeywordsCount} <meta name="keywords"> tag in <head>`);
-      // Law 4
-      const { total: strongCount } = passStrong(document);
-      console.log(`This HTML has ${strongCount} <strong> tag`);
-      // Law 5
-      const { total: h1Count } = passH1(document);
-      console.log(`This HTML has ${h1Count} <h1> tag`);
-    }).catch(err => console.log(err));
-
-  return 200;
+/**
+ * Translate the rule to string for those whose type of rule is TagsWithoutAttribute.
+ */
+function stringifyTagsWithoutAttribute({ Amount, Tag, AttributeName }) {
+  if (Amount > 0) {
+    return `There are ${Amount} <${Tag}> tag without ${AttributeName} attribute.`;
+  }
+  return null;
 }
 
-function passLaw1Count(document) {
-  const imgNodes = document.querySelectorAll('img');
-  const imgNodesWithAlt = document.querySelectorAll('img[alt]');
-  return {
-    total: imgNodes.length - imgNodesWithAlt.length,
-  };
+/**
+ * Translate the rule to string for those whose type of rule is TagsNotInHead.
+ */
+function stringifyTagsNotInHead({ Result, Tag, AttributeName, AttributeValue }) {
+  let outputTag;
+  if (AttributeName !== undefined && AttributeValue !== undefined) {
+    outputTag = `${Tag} ${AttributeName}="${AttributeValue}"`;
+  } else {
+    outputTag = `${Tag}`;
+  }
+  if (Result === true) {
+    return `This HTML does not have <${outputTag}> in <head>`;
+  }
+  return null;
 }
 
-function passLaw2Count(document) {
-  const aNodes = document.querySelectorAll('a');
-  const aNodesWithRel = document.querySelectorAll('a[rel]');
-  return {
-    total: aNodes.length - aNodesWithRel.length,
-  };
+/**
+ * Translate the rule to string for those whose type of rule is TagsMoreThan.
+ */
+function stringifyTagsMoreThan({ Result, Threshold, Tag }) {
+  if (Result === true) {
+    return `This HTML has more than ${Threshold} <${Tag}> tag`;
+  }
+  return null;
+}
+const stringify = {
+  TagsWithoutAttribute: stringifyTagsWithoutAttribute,
+  TagsNotInHead: stringifyTagsNotInHead,
+  TagsMoreThan: stringifyTagsMoreThan,
+};
+
+/**
+ * Map the validated rules to the final output string.
+ * @param {Array} rules - the validated rules
+ */
+function outputString(rules) {
+  return rules.map(data => stringify[data.Type](data));
 }
 
-function passHaveTitle(document) {
-  const titleNodes = document.querySelectorAll('head>title');
-  return {
-    total: titleNodes.length,
-  };
+/**
+ * Validate the DOM model by the rule data which type is TagsWithoutAttribute.
+ * @param {*} document - the document object model of the html
+ * @param {*} data - the rule's data
+ */
+function handleTagsWithoutAttribute(document, data) {
+  const { Tag: tag, AttributeName: attribute } = data;
+  const tagNodes = document.querySelectorAll(tag);
+  const tagNodesWithAttribute = document.querySelectorAll(`${tag}[${attribute}]`);
+  const amount = tagNodes.length - tagNodesWithAttribute.length;
+  return { ...data, Amount: amount };
 }
 
-function passMetaDescriptions(document) {
-  const nodes = document.querySelectorAll('head>meta[name="descriptions"]');
-  return { total: nodes.length };
+/**
+ * Validate the DOM model by the rule data which type is TagsNotInHead.
+ * @param {*} document - the document object model of the html
+ * @param {*} data - the rule's data
+ */
+function handleTagsNotInHead(document, data) {
+  const { Tag: tag, AttributeName: attName, AttributeValue: attValue } = data;
+  // TODO: 字串處理看似不易懂，要想辦法使易懂
+  let att;
+  if (attName !== undefined && attValue !== undefined) {
+    att = `[${attName}="${attValue}"]`;
+  } else if (attName !== undefined) {
+    att = `[${attName}]`;
+  }
+  const nodes = document.querySelectorAll(`head>${tag}${att !== undefined ? att : ''}`);
+  const result = nodes.length === 0;
+  return { ...data, Result: result };
 }
 
-function passMetaKeywords(document) {
-  const nodes = document.querySelectorAll('head>meta[name="keywords"]');
-  return { total: nodes.length };
+/**
+ * Validate the DOM model by the rule data which type is TagsMoreThan.
+ * @param {*} document - the document object model of the html
+ * @param {*} data - the rule's data
+ */
+function handleTagsMoreThan(document, data) {
+  const { Tag: tag, Threshold: threshold } = data;
+  const nodes = document.querySelectorAll(tag);
+  const result = nodes.length > threshold;
+  return { ...data, Result: result };
 }
 
-function passStrong(document) {
-  const nodes = document.querySelectorAll('strong');
-  return { total: nodes.length };
+/**
+ * Validate the file by rules.
+ * @param {*} filename - the file name of the file which we want to validate
+ * @param {*} rules - the validation rules
+ */
+async function validator(filename, rules) {
+  let dom;
+  try {
+    dom = await JSDOM.fromFile(filename);
+  } catch (err) {
+    console.log(err);
+  }
+  const { document } = dom.window;
+  return rules.map((data) => {
+    switch (data.Type) {
+      case 'TagsWithoutAttribute':
+        return handleTagsWithoutAttribute(document, data);
+      case 'TagsNotInHead':
+        return handleTagsNotInHead(document, data);
+      case 'TagsMoreThan':
+        return handleTagsMoreThan(document, data);
+      default:
+        throw Error('The type of the rule is undefined!');
+    }
+  });
 }
 
-function passH1(document) {
-  const nodes = document.querySelectorAll('h1');
-  return { total: nodes.length };
-}
-
-module.exports = { validator };
+module.exports = {
+  validator,
+  outputString,
+  stringifyTagsWithoutAttribute,
+  stringifyTagsNotInHead,
+  stringifyTagsMoreThan,
+};
