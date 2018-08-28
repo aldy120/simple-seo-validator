@@ -1,9 +1,15 @@
 const jsdom = require('jsdom');
+const fs = require('fs');
 
 const { JSDOM } = jsdom;
 
 /**
  * Translate the rule to string for those whose type of rule is TagsWithoutAttribute.
+ * @param {Object} rule - The rule which has enough info to render.
+ * @param {number} rule.Amount - The amount of certain tags without the attribute
+ * @param {string} rule.Tag - The tag name
+ * @param {string} rule.AttributeName - The attribute name
+ * @private
  */
 function stringifyTagsWithoutAttribute({ Amount, Tag, AttributeName }) {
   if (Amount > 0) {
@@ -14,6 +20,12 @@ function stringifyTagsWithoutAttribute({ Amount, Tag, AttributeName }) {
 
 /**
  * Translate the rule to string for those whose type of rule is TagsNotInHead.
+ * @private
+ * @param {Object} rule - The rule which has enough info to render.
+ * @param {boolean} rule.Result - The result show whether the rule is broken
+ * @param {string} rule.Tag - The tag name
+ * @param {string} rule.AttributeName - The attribute name
+ * @param {string} rule.AttributeValue - The amount of certain tags without the attribute
  */
 function stringifyTagsNotInHead({ Result, Tag, AttributeName, AttributeValue }) {
   let outputTag;
@@ -30,6 +42,11 @@ function stringifyTagsNotInHead({ Result, Tag, AttributeName, AttributeValue }) 
 
 /**
  * Translate the rule to string for those whose type of rule is TagsMoreThan.
+ * @param {Object} rule - The rule which has enough info to render.
+ * @param {boolean} rule.Result - The result show whether the rule is broken.
+ * @param {number} rule.Threshold - The upper bound which number of tags cannot more than.
+ * @param {string} rule.Tag - The tag name
+ * @private
  */
 function stringifyTagsMoreThan({ Result, Threshold, Tag }) {
   if (Result === true) {
@@ -45,7 +62,8 @@ const stringify = {
 
 /**
  * Map the validated rules to the final output string.
- * @param {Array} rules - the validated rules
+ * @param {Object[]} rules - the validated rules
+ * @private
  */
 function outputString(rules) {
   return rules.map(data => stringify[data.Type](data));
@@ -53,8 +71,11 @@ function outputString(rules) {
 
 /**
  * Validate the DOM model by the rule data which type is TagsWithoutAttribute.
- * @param {*} document - the document object model of the html
- * @param {*} data - the rule's data
+ * @param {Object} document - the document object model of the html
+ * @param {Object} data - the rule's data
+ * @param {string} data.Tag - The tag name
+ * @param {string} data.AttributeName - The attribute name
+ * @private
  */
 function handleTagsWithoutAttribute(document, data) {
   const { Tag: tag, AttributeName: attribute } = data;
@@ -67,18 +88,23 @@ function handleTagsWithoutAttribute(document, data) {
 /**
  * Validate the DOM model by the rule data which type is TagsNotInHead.
  * @param {*} document - the document object model of the html
- * @param {*} data - the rule's data
+ * @param {Object} data - the rule's data
+ * @param {string} data.Tag - The tag name
+ * @param {string} data.AttributeName - The attribute name
+ * @param {string} data.AttributeValue - The amount of certain tags without the attribute
+ * @private
  */
 function handleTagsNotInHead(document, data) {
   const { Tag: tag, AttributeName: attName, AttributeValue: attValue } = data;
-  // TODO: 字串處理看似不易懂，要想辦法使易懂
-  let att;
+  let att = '';
   if (attName !== undefined && attValue !== undefined) {
     att = `[${attName}="${attValue}"]`;
   } else if (attName !== undefined) {
     att = `[${attName}]`;
   }
-  const nodes = document.querySelectorAll(`head>${tag}${att !== undefined ? att : ''}`);
+
+  // Find tag with attribute name(name/value)
+  const nodes = document.querySelectorAll(`head>${tag}${att}`);
   const result = nodes.length === 0;
   return { ...data, Result: result };
 }
@@ -87,6 +113,9 @@ function handleTagsNotInHead(document, data) {
  * Validate the DOM model by the rule data which type is TagsMoreThan.
  * @param {*} document - the document object model of the html
  * @param {*} data - the rule's data
+ * @param {number} data.Threshold - The upper bound which number of tags cannot more than.
+ * @param {string} data.Tag - The tag name
+ * @private
  */
 function handleTagsMoreThan(document, data) {
   const { Tag: tag, Threshold: threshold } = data;
@@ -97,8 +126,9 @@ function handleTagsMoreThan(document, data) {
 
 /**
  * Validate the file by rules.
- * @param {*} filename - the file name of the file which we want to validate
- * @param {*} rules - the validation rules
+ * @param {string} filename - the file name of the file which we want to validate
+ * @param {Object[]} rules - the validation rules
+ * @private
  */
 async function validator(filename, rules) {
   let dom;
@@ -122,10 +152,34 @@ async function validator(filename, rules) {
   });
 }
 
+/**
+ * Log the validate result to the console
+ * @param {string} filename - Html file name
+ * @param {Object[]} rules - Array of rules
+ */
+async function logReport(filename, rules) {
+  const data = await validator(filename, rules);
+  const output = outputString(data).filter(x => x !== null).join('\n');
+  console.log(output);
+}
+/**
+ * Write the report to a file
+ * @param {string} filename - Html file name
+ * @param {object[]} rules - Array of rules
+ * @param {string} outputFilename - File path to write
+ */
+async function writeReport(filename, rules, outputFilename) {
+  const data = await validator(filename, rules);
+  const output = outputString(data).filter(x => x !== null).join('\n');
+  fs.writeFileSync(outputFilename, output);
+}
+
 module.exports = {
   validator,
   outputString,
   stringifyTagsWithoutAttribute,
   stringifyTagsNotInHead,
   stringifyTagsMoreThan,
+  logReport,
+  writeReport,
 };

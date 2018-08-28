@@ -1,3 +1,10 @@
+# A simple seo validator
+A simple SEO validator with some rules built in.
+
+# Rules
+- TagsWithoutAttribute
+- TagsNotInHead
+- TagsMoreThan
 # Pre-defined SEO rules
 1. Detect if any <img /> tag without alt attribute
 2. Detect if any <a /> tag without rel attribute
