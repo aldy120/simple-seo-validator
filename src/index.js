@@ -1,7 +1,5 @@
-const jsdom = require('jsdom');
+const { JSDOM } = require('jsdom');
 const fs = require('fs');
-
-const { JSDOM } = jsdom;
 
 /**
  * Translate the rule to string for those whose type of rule is TagsWithoutAttribute.
