@@ -1,4 +1,6 @@
-# A simple seo validator
+# simple-seo-validator
+[![Build Status](https://travis-ci.org/aldy120/simple-seo-validator.svg?branch=master)](https://travis-ci.org/aldy120/simple-seo-validator)
+
 A simple SEO validator with some rules built in.
 
 # Quick start
