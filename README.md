@@ -2,7 +2,7 @@
 A simple SEO validator with some rules built in.
 
 # Quick start
-First, create a simple html file for our example.
+First, we create a simple `example.html` file for our example.
 
 `example.html`
 ```
@@ -15,12 +15,13 @@ First, create a simple html file for our example.
 </body>
 </html>
 ```
+> Note that `example.html` has a img tag without attribute alt.
 
-Then we can validate the html file above.
+Then we can validate the html file `example.html` with the rule (all img tag should have alt attribute).
 
 `index.js`
 ```js
-const { logReport } = require('../src');
+const { logReport } = require('simple-seo-validator');
 
 const rules = [
   { Type: 'TagsWithoutAttribute', Tag: 'img', AttributeName: 'alt' }
@@ -37,7 +38,9 @@ You can use the following rule types to validate a HTML file.
 - `TagsMoreThan`
 
 ## `TagsWithoutAttribute`
-`TagsWithoutAttribute` can find the amount of tags which is without a certain attribute, by specifying the tag name and attribute name.
+`TagsWithoutAttribute` can find the amount of the tags without a certain attribute, by specifying the tag name and attribute name. 
+
+If we want to check whether there is some `img` tag without `alt` attribute, we can set the following rule.
 
 Example rules: 
 ```js
@@ -47,7 +50,12 @@ Example rules:
 ```
 
 ## `TagsNotInHead`
-`TagsNotInHead` can validate whether a tag is in HTML head, by specifying tag name, attribute name, and attribute value. If you do not specify an attribute value, all the tags with the attribute name will be counted.
+`TagsNotInHead` can validate whether a tag is in HTML head, by specifying tag name, attribute name, and attribute value. If you do not specify an attribute value, all the tags which has the attribute name will be counted.
+
+If we want to know:
+- whether `title` tag is not in head
+- and whether `meta` tag with attribute name `name` and attribute value `descriptions`, is in head
+we can apply the following two rules:
 
 Example rules: 
 ```js
@@ -60,6 +68,8 @@ Example rules:
 
 ## `TagsMoreThan`
 `TagsMoreThan` can validate whether the number of the tags is more than the threshold, by specifing the tag name and the threshold.
+
+If we want to know whether `h1` tag appears more than 1 time, use the following rule.
 
 Example rules: 
 ```js
