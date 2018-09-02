@@ -2,10 +2,9 @@
   "name": "simple-seo-validator",
   "version": "1.1.0",
   "description": "A simple seo validator",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "mocha",
-    "build": "babel src -d lib"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -21,8 +20,6 @@
   },
   "homepage": "https://github.com/aldy120/simple-seo-validator#readme",
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
     "eslint": "^5.4.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
