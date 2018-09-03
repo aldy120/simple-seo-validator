@@ -111,11 +111,13 @@ You can save the report to a file using `writeReport` function, which returns a 
 ```js
 const { writeReport } = require('../src');
 
-writeReport('example.html', rules, 'myReport.txt');
+writeReport('example.html', rules, 'myReport.txt')
+  .catch(console.log);
 ```
 
 # Print report in console
 As we show in quick start section, `logReport` can print report in console, which returns a promise.
 ```js
-logReport('example.html', rules);
+logReport('example.html', rules).catch(err => console.log(err))
+  .catch(console.log);
 ```

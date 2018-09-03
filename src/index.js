@@ -128,7 +128,7 @@ function handleTagsMoreThan(document, data) {
  * @param {Object[]} rules - the validation rules
  * @private
  */
-async function validator(filename, rules) {
+async function validator(filename, rules = []) {
   let dom;
   try {
     dom = await JSDOM.fromFile(filename);
