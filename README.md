@@ -36,8 +36,8 @@ Then we can validate the html file `example.html` with the rule (all img tag sho
 const { logReport } = require('simple-seo-validator');
 
 const rules = [
-  { Type: 'TagsWithoutAttribute', Tag: 'img', AttributeName: 'alt' }
-]
+  { Type: 'TagsWithoutAttribute', Tag: 'img', AttributeName: 'alt' },
+];
 
 // Validate example.html and log the report in console.
 logReport('example.html', rules); // There are 1 <img> tag without alt attribute.
