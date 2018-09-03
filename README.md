@@ -2,6 +2,16 @@
 [![Build Status](https://travis-ci.org/aldy120/simple-seo-validator.svg?branch=master)](https://travis-ci.org/aldy120/simple-seo-validator)
 
 A simple SEO validator with some rules built in.
+## Installation
+
+This is a [Node.js](https://nodejs.org/en/) module available through the
+[npm registry](https://www.npmjs.com/). Installation is done using the
+[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
+
+```sh
+$ npm install simple-seo-validator
+```
+
 
 # Quick start
 First, we create a simple `example.html` file for our example.
