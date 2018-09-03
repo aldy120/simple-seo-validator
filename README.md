@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/aldy120/simple-seo-validator.svg?branch=master)](https://travis-ci.org/aldy120/simple-seo-validator)
 
 A simple SEO validator with some rules built in.
-## Installation
+# Installation
 
 This is a [Node.js](https://nodejs.org/en/) module available through the
 [npm registry](https://www.npmjs.com/). Installation is done using the
